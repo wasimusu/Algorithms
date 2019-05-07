@@ -1,5 +1,4 @@
 """ Implement insertion sort """
-
 import random
 
 

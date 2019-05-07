@@ -1,3 +1,4 @@
+""" Implement merge sort using recursion """
 import random
 
 
@@ -7,12 +8,13 @@ def merge(L, R):
     :param R: sorted array of numbers
     :return: L and R merged into one
     """
-    output = []
-
     L = sorted(L)
     R = sorted(R)
 
+    output = []
+
     while L or R:
+        # If none of the two lists are empty
         if L and R:
             if L[0] > R[0]:
                 num = R.pop(0)
