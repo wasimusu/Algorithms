@@ -1,4 +1,8 @@
-""" Implement merge sort using recursion """
+"""
+Implement merge sort using recursion
+Time complexity O(n*log(n))
+Space complexity O(n)
+"""
 import random
 
 
