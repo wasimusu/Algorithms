@@ -1,6 +1,10 @@
 """
 Implements simulated annealing
 Could be used for numerical regression problem
+
+Note: Requires good initial points.
+Unlike Gradient Descent Optimizers, Simulated Annealing has lots of whimsical jumps and can't utilize previous
+gains in reducing errors.
 """
 import random
 import numpy as np
@@ -44,6 +48,7 @@ def simulatedAnnleaing(X, Y):
     num_iter = 0
     max_iter = 10000
     min_cost = 0.5
+    EXPLORE = 4  # In 4% of the cases, explore unlikely solutions.
     while True:
         if num_iter >= max_iter or old_cost <= min_cost:
             break
@@ -56,9 +61,8 @@ def simulatedAnnleaing(X, Y):
             a, b = new_a, new_b
             old_cost = new_cost
         else:
-            explore = random.randint(0, 100)
             # In 10% of the cases where new solution is not optimal we'll explore it. Rest, we'll discard it.
-            if explore < 4:
+            if random.randint(0, 100) < EXPLORE:
                 a, b = new_a, new_b
                 old_cost = new_cost
 
