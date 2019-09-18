@@ -8,7 +8,7 @@ gains in reducing errors.
 """
 import random
 import numpy as np
-
+import math
 
 def generate_data():
     """
@@ -46,12 +46,21 @@ def simulatedAnnleaing(X, Y):
     a, b = random.randint(-10, 10), random.randint(-10, 10)  # Good initial guess
     old_cost = compute_cost(X, Y, a, b)
     num_iter = 0
-    max_iter = 10000
-    min_cost = 0.5
-    EXPLORE = 4  # In 4% of the cases, explore unlikely solutions.
-    while True:
-        if num_iter >= max_iter or old_cost <= min_cost:
-            break
+    max_iter = 100
+    min_cost = 0.05
+
+    thresh_acceptance = 0.98
+    delta_average_cost = 0
+    for _ in range(100):
+        a, b = random.randint(-10, 10), random.randint(-10, 10)  # Good initial guess
+        new_cost = compute_cost(X, Y, a, b)
+        delta_average_cost += abs(new_cost - old_cost)
+        old_cost = new_cost
+    delta_average_cost/= 100
+
+    temperature = delta_average_cost / math.log(thresh_acceptance)
+
+    while num_iter <= max_iter or old_cost > min_cost:
 
         # Generate a new random neighboring solution
         new_a, new_b = a + np.random.uniform(-1, 1, 1), b + np.random.uniform(-1, 1, 1)
@@ -61,11 +70,12 @@ def simulatedAnnleaing(X, Y):
             a, b = new_a, new_b
             old_cost = new_cost
         else:
-            # In 10% of the cases where new solution is not optimal we'll explore it. Rest, we'll discard it.
-            if random.randint(0, 100) < EXPLORE:
-                a, b = new_a, new_b
-                old_cost = new_cost
-
+            acceptance_probability = math.exp((new_cost-old_cost)/temperature)
+            if acceptance_probability > thresh_acceptance:
+                if random.randint(0, 100) < 50:
+                    a, b = new_a, new_b
+                    old_cost = new_cost
+                    temperature *= 0.90
         num_iter += 1
 
         if num_iter % 10 == 0:
