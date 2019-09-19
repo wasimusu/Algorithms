@@ -1,4 +1,5 @@
 """
+Author : Wasim Akram Khan. Original Work.
 Implements simulated annealing
 Could be used for numerical regression problem
 
@@ -9,17 +10,17 @@ gains in reducing errors.
 import random
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
-random.seed(10)
+random.seed(11)
 
 
 def generate_data(N=100):
     """
     :return: list[(int, int)]
     """
-    cities = [(random.randint(1, 1000), random.randint(1, 1000)) for _ in range(N)]
+    cities = [(random.randint(1, 10), random.randint(1, 10)) for _ in range(N)]
     return cities
-
 
 def l2_distance(point1, point2):
     distance = math.pow((point1[0] - point2[0]), 2) + math.pow((point1[1] - point2[1]), 2)
@@ -33,7 +34,7 @@ def compute_cost(cities):
     return cost
 
 
-def simulatedAnnleaing(cities):
+def simulatedAnnleaing(cities, mutation="swap"):
     """
     Algorithm
     Generate a random solution
@@ -44,6 +45,7 @@ def simulatedAnnleaing(cities):
         If cost_new < cost_old -> move to the new solution
         Else -> maybe move to the new solution
     :param cities: coordinates of places
+    :param mutation: how to mutate cities order. Supported values : "swap" and "reverse"
     :return: list of coefficients
     :type list[float]
     """
@@ -52,53 +54,57 @@ def simulatedAnnleaing(cities):
     random.shuffle(cities)
     old_cost = compute_cost(cities)
     num_iter = 0
-    max_iter = 10000
+    max_iter = 100000
 
     thresh_acceptance = 0.98
-    delta_average_cost = 0
-    for _ in range(100):
-        random.shuffle(cities)
-        new_cost = compute_cost(cities)
-        delta_average_cost += new_cost - old_cost
-        old_cost = new_cost
-    delta_average_cost /= 100
-
-    temperature = abs(delta_average_cost) / math.log(thresh_acceptance)
-    print("Starting temperature ", "%.2f" % temperature, "%.2f" % delta_average_cost)
+    temperature = 100
     losses = [old_cost]
     while num_iter <= max_iter:
 
         # Generate a new random neighboring solution
         new_cities = cities.copy()
 
-        for i in range(int(0.3 * len(cities))):
-            i, j = random.randint(1, len(cities) - 1), random.randint(1, len(cities) - 1)
-            temp = cities[j]
-            cities[j] = cities[i]
-            cities[i] = temp
+        # Mutation 1 : Swap cities
+        if mutation == "swap":
+            for i in range(max(1, int(0.3 * len(cities)))):
+                i, j = random.randint(0, len(cities) - 1), random.randint(0, len(cities) - 1)
+                temp = new_cities[j]
+                new_cities[j] = new_cities[i]
+                new_cities[i] = temp
 
-        # random.shuffle(new_cities)
+        # Mutation 2 : Reverse cities
+        if mutation == "reverse":
+            i, j = random.randint(0, len(cities) - 1), random.randint(0, len(cities) - 1)
+            temp_cities = new_cities[i:j]
+            temp_cities = temp_cities[::-1]
+            for i, j in enumerate(list(range(i, j))):
+                new_cities[j] = temp_cities[i]
+
         new_cost = compute_cost(new_cities)
-        delta_error = new_cost - old_cost
-        acceptance_probability = math.exp(delta_error / temperature)
-        if delta_error < 0:
-            print("Acceptance probability : ", "%.2f" %acceptance_probability)
+        if new_cost < old_cost:
             cities = new_cities
             old_cost = new_cost
         else:
-            if acceptance_probability > thresh_acceptance:
-                if random.randint(0, 100) < 50:
+            delta_error = old_cost - new_cost
+            acceptance_probability = math.exp(delta_error / temperature)
+            if acceptance_probability > thresh_acceptance and acceptance_probability != 0:
+                if random.randint(0, 100) < 50 and new_cities != cities:
                     cities = new_cities
                     old_cost = new_cost
-                    temperature *= 0.90
+                    temperature *= 0.99
         num_iter += 1
         losses.append(old_cost)
-        if num_iter % 100 == 0:
-            print("%.2f" % old_cost, temperature)
+        if num_iter % 1000 == 0:
+            print("%.2f" % old_cost, "%.3f" % temperature)
 
-    print(old_cost, temperature)
+    plt.plot(losses)
+    plt.title("TSP Simulated Annealing Itervation vs Loss. Mutation - ", mutation)
+    plt.xlabel("Iteration")
+    plt.ylabel("Losses")
+    plt.savefig("Loss vs iteration - reverse cities.jpg")
+    plt.show()
 
 
 if __name__ == '__main__':
     cities = generate_data()
-    simulatedAnnleaing(cities)
+    simulatedAnnleaing(cities, mutation="swap")
