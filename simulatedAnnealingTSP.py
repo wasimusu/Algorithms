@@ -8,7 +8,6 @@ Unlike Gradient Descent Optimizers, Simulated Annealing has lots of whimsical ju
 gains in reducing errors.
 """
 import random
-import numpy as np
 import math
 import matplotlib.pyplot as plt
 
@@ -21,6 +20,7 @@ def generate_data(N=100):
     """
     cities = [(random.randint(1, 10), random.randint(1, 10)) for _ in range(N)]
     return cities
+
 
 def l2_distance(point1, point2):
     distance = math.pow((point1[0] - point2[0]), 2) + math.pow((point1[1] - point2[1]), 2)
@@ -54,11 +54,13 @@ def simulatedAnnleaing(cities, mutation="swap"):
     random.shuffle(cities)
     old_cost = compute_cost(cities)
     num_iter = 0
-    max_iter = 100000
+    max_iter = 10000
 
     thresh_acceptance = 0.98
-    temperature = 100
+    temperature = 10
     losses = [old_cost]
+    title = "TSP SA Itervation vs Loss. Mutation - {} Temp - {} cities - {}".format(mutation, temperature, len(cities))
+
     while num_iter <= max_iter:
 
         # Generate a new random neighboring solution
@@ -66,7 +68,7 @@ def simulatedAnnleaing(cities, mutation="swap"):
 
         # Mutation 1 : Swap cities
         if mutation == "swap":
-            for i in range(max(1, int(0.3 * len(cities)))):
+            for i in range(max(1, int(0.075 * len(cities)))):
                 i, j = random.randint(0, len(cities) - 1), random.randint(0, len(cities) - 1)
                 temp = new_cities[j]
                 new_cities[j] = new_cities[i]
@@ -98,13 +100,13 @@ def simulatedAnnleaing(cities, mutation="swap"):
             print("%.2f" % old_cost, "%.3f" % temperature)
 
     plt.plot(losses)
-    plt.title("TSP Simulated Annealing Itervation vs Loss. Mutation - ", mutation)
+    plt.title(title)
     plt.xlabel("Iteration")
     plt.ylabel("Losses")
-    plt.savefig("Loss vs iteration - reverse cities.jpg")
+    plt.savefig(title + ".jpg")
     plt.show()
 
 
 if __name__ == '__main__':
-    cities = generate_data()
-    simulatedAnnleaing(cities, mutation="swap")
+    cities = generate_data(N=1000)
+    simulatedAnnleaing(cities, mutation="reverse")
